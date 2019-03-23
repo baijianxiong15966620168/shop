@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import request from '@/utils/request'
 
 export default {
   name: 'Login',
@@ -52,12 +52,17 @@ export default {
       this.$refs['ruleForm'].validate(async (valid) => {
         // 在点击登录按钮的时候去验证是否通过表单验证，通过了才让提交请求，上面的ruleForm就是上面form表单中的ref的值。必须使用引号
         if (valid) {
-          const { data: { meta } } = await axios.post('http://localhost:8888/api/private/v1/login', this.formLabelAlign)
+          const { data: { data, meta } } = await request.post('/login', this.formLabelAlign)
           if (meta.status === 200) {
             this.$message({
               message: '登录成功',
               type: 'success'
             })
+            // 登录成功之后设置token值储存在本地
+            window.localStorage.setItem('token', data.token)
+            // 登录成功之后跳转都之前退出的页面,在$route里面获取之前跳转回来的路由
+            const routerPath = this.$route.query.redirect
+            this.$router.replace(routerPath || '/')
           } else {
             this.$message({
               message: meta.msg,
