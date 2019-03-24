@@ -23,7 +23,7 @@ export default {
             pagesize: 8
           }
         }
-      )
+      ).catch(err => console.log(err))
       console.log(resData)
     }
   }
