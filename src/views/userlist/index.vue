@@ -1,15 +1,16 @@
 <template>
   <div>
     <el-card class="box-card">
-      <el-breadcrumb separator-class="el-icon-arrow-right">
+      <!-- <el-breadcrumb separator-class="el-icon-arrow-right">
         <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
         <el-breadcrumb-item>用户管理</el-breadcrumb-item>
         <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-      </el-breadcrumb>
+      </el-breadcrumb> -->
+      <crumbs :list="[{ label:'首页', path:'/'}, { label:'用户管理'}, { label: '用户列表'}]"></crumbs>
       <el-row :gutter="20" class="serachRow">
         <el-col :span="6">
           <el-input placeholder="请输入内容" v-model="input5" class="input-with-select">
-            <el-button slot="append" icon="el-icon-search"></el-button>
+            <el-button slot="append" icon="el-icon-search" @click="userOnload(input5,1)"></el-button>
           </el-input>
         </el-col>
         <el-col :span="6">
@@ -57,16 +58,26 @@
           <template slot-scope="scope">
             <el-button
               size="mini"
-              @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+              @click="$refs.editComponent.userHandleEdit(scope.row)">编辑</el-button>
             <el-button
               size="mini"
               type="danger"
               :disabled="scope.row.switchStatus"
               @click="userHandleDelete(scope.$index, scope.row)">删除</el-button>
-            <el-button type="success" size="mini">分配角色</el-button>
+            <el-button type="success" size="mini" @click="$refs.roleComponent.userRoleList(scope.row)">分配角色</el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 这里是分页插件 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :page-sizes="[5, 10, 15, 20]"
+        :page-size="this.pagesize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="userTotal">
+      </el-pagination>
     </el-card>
 
     <el-dialog title="添加新用户" :visible.sync="addFormVisible">
@@ -89,11 +100,19 @@
         <el-button type="primary" @click="addUser" :disabled="isSure">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 这里是编辑组件,这里添加的ref属性可以让当前父组件操作当前子组件 -->
+    <!-- 将子组件里的事件注册之后会触发后面的函数刷新页面 -->
+    <userEdit ref="editComponent" @editOk="userOnload"></userEdit>
+    <!-- 这是分配角色的组件 -->
+    <userAllocation ref="roleComponent"></userAllocation>
   </div>
 </template>
 
 <script>
 import * as users from '@/views/api/user'
+import userEdit from './edit'
+import userAllocation from './allocation'
+// import crumbs from '@/components/crumbs'
 
 export default {
   name: 'UserList',
@@ -114,6 +133,9 @@ export default {
       },
       loading: false,
       isDelete: false,
+      pagenum: 1,
+      pagesize: 5,
+      userTotal: 0,
       rules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -132,10 +154,22 @@ export default {
     }
   },
   methods: {
+    // 这里是分页组件的分页组件
+    handleSizeChange (val) {
+      // console.log(`每页 ${val} 条`)
+      this.pagesize = val
+      this.userOnload()
+    },
+    handleCurrentChange (val) {
+      // console.log(`当前页: ${val}`)
+      this.pagenum = val
+      this.userOnload()
+    },
     // 页面加载时请求数据
-    async userOnload () {
+    async userOnload (text, pagenum) {
       this.loading = true // 开始loading状态，在网络卡顿的时候用户处于等待状态
-      const { data, meta } = await users.getUserList({ pagenum: 1, pagesize: 100 })
+      const { data, meta } = await users.getUserList({ pagenum: pagenum || this.pagenum, pagesize: this.pagesize, query: text || '' })
+      this.userTotal = data.total // 总共有多少条数据
       if (meta.status === 200) {
         // 页面请求数据的时候给状态按钮加一个属性用来控制状态按钮
         data.users.forEach(el => {
@@ -222,15 +256,15 @@ export default {
       }
       item.switchStatus = false // 解开禁用
     }
+  },
+  components: {
+    userEdit,
+    userAllocation
   }
 }
 </script>
 
-<style scpoed>
-  .el-card__header{
-    background-color: skyblue
-  }
-
+<style scoped>
   .serachRow{
     margin-top: 10px;
     margin-bottom: 10px
@@ -239,13 +273,12 @@ export default {
   .el-breadcrumb{
     height: 45px;
     line-height: 45px;
-    background-color: #D3DCE6;
     display: flex;
     align-items: center
   }
 
   .el-card__body{
-    padding: 0px!important;
+    padding: 0px 10px 0px 10px!important;
   }
 
   .el-table .warning-row {
