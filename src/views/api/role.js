@@ -61,3 +61,14 @@ export const editRoleSubmit = (id, req) => {
   })
     .then(res => res.data)
 }
+
+/*
+获取左侧菜单权限
+*/
+export const getAside = () => {
+  return request({
+    method: 'GET',
+    url: 'menus'
+  })
+    .then(res => res.data)
+}

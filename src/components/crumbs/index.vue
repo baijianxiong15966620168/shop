@@ -11,7 +11,7 @@
   </el-breadcrumb>
 </template>
 
-<script>
+ <script>
 export default {
   name: 'PublicCrumbs',
   props: ['list']

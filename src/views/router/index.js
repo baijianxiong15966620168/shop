@@ -5,6 +5,7 @@ import Lyout from '@/views/lyout'
 import UserList from '@/views/userlist'
 import Home from '@/views/home'
 import RoleLit from '@/views/role/roleList' // 挂载角色列表组件，注册路由
+import RightsList from '@/views/role/rightsList' // 挂载权限列表组件
 
 Vue.use(Router)
 
@@ -17,8 +18,27 @@ const routerX = new Router({
       children: [
         // 进来默认展示就是home页面,在第一项子组件path里面不加路径就是指进来默认就是这个组件
         { path: '', component: Home },
-        { path: '/users', component: UserList },
-        { path: '/role/roleList', component: RoleLit } // 注册为子组件
+        // { path: '/users', component: UserList },
+        // { path: '/roles', component: RoleLit } // 注册为子组件
+        {
+          path: '/users',
+          component: {
+            render: c => c('router-view') // 这里是直接渲染了router-view组件
+          },
+          meta: { label: '用户管理' },
+          children: [
+            { path: '/users/users', component: UserList, meta: { label: '用户列表' } }
+          ]
+        },
+        {
+          path: '/rigths',
+          component: { render: c => c('router-view') },
+          meta: { label: '权限管理' },
+          children: [
+            { path: '/rights/roles', component: RoleLit, meta: { label: '角色列表' } }, // 在组件的前面加上之前的父组件的路由，方便区分路由管理
+            { path: '/rights/rights', component: RightsList, meta: { label: '权限列表' } } // 在组件的前面加上之前的父组件的路由，方便区分路由管理
+          ]
+        }
       ]
     }
   ]
