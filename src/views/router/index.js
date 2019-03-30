@@ -6,6 +6,8 @@ import UserList from '@/views/userlist'
 import Home from '@/views/home'
 import RoleLit from '@/views/role/roleList' // 挂载角色列表组件，注册路由
 import RightsList from '@/views/role/rightsList' // 挂载权限列表组件
+import GoodsList from '@/views/goods/goods-list'
+import AddGoods from '@/views/goods/goods-list/addgoods'
 
 Vue.use(Router)
 
@@ -37,6 +39,15 @@ const routerX = new Router({
           children: [
             { path: '/rights/roles', component: RoleLit, meta: { label: '角色列表' } }, // 在组件的前面加上之前的父组件的路由，方便区分路由管理
             { path: '/rights/rights', component: RightsList, meta: { label: '权限列表' } } // 在组件的前面加上之前的父组件的路由，方便区分路由管理
+          ]
+        },
+        {
+          path: '/goods',
+          component: { render: c => c('router-view') },
+          meta: { label: '商品管理' },
+          children: [
+            { path: '/goods/goods', component: GoodsList, meta: { label: '商品列表' } },
+            { path: '/goods/addGoods', component: AddGoods, meta: { label: '商品列表' } }
           ]
         }
       ]

@@ -12,3 +12,11 @@ a{
     list-style: none;
     text-decoration: none
 }
+
+.el-card{
+    min-height: 100%
+}
+
+.el-breadcrumb{
+    background-color: #D3DCE6
+}
